@@ -162,7 +162,6 @@
 			buildConfigurationList = D365459A1F98491C00AE06E2 /* Build configuration list for PBXNativeTarget "BarcodeHeroDemo" */;
 			buildPhases = (
 				D36545871F98491C00AE06E2 /* Sources */,
-				D3BF7756228E6F370073C6D6 /* Combined Lint Run Script */,
 				D36545881F98491C00AE06E2 /* Frameworks */,
 				D36545891F98491C00AE06E2 /* Resources */,
 				34E7CDF323444BF300D58A4E /* Embed Frameworks */,
@@ -226,27 +225,6 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXResourcesBuildPhase section */
-
-/* Begin PBXShellScriptBuildPhase section */
-		D3BF7756228E6F370073C6D6 /* Combined Lint Run Script */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputFileListPaths = (
-			);
-			inputPaths = (
-			);
-			name = "Combined Lint Run Script";
-			outputFileListPaths = (
-			);
-			outputPaths = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "\"${SRCROOT}/../scripts/swiftlint_run_script.sh\"\n";
-		};
-/* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
 		D36545871F98491C00AE06E2 /* Sources */ = {
@@ -414,7 +392,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_STYLE = Automatic;
-				DEVELOPMENT_TEAM = ZW7QWR628D;
+				DEVELOPMENT_TEAM = MQJ8Z7J545;
 				INFOPLIST_FILE = BarcodeHeroDemo/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 11.0;
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -433,7 +411,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_STYLE = Automatic;
-				DEVELOPMENT_TEAM = ZW7QWR628D;
+				DEVELOPMENT_TEAM = MQJ8Z7J545;
 				INFOPLIST_FILE = BarcodeHeroDemo/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 11.0;
 				LD_RUNPATH_SEARCH_PATHS = (
