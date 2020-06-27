@@ -59,6 +59,30 @@
 //    private var dismissOnScan: Bool = false
         private var hasLoaded: Bool = false
         private var previewLayer: AVCaptureVideoPreviewLayer?
+        private lazy var curtain: UIView = {
+            let curtain = UIView(frame: UIScreen.main.bounds)
+            curtain.backgroundColor = UIColor.black
+            
+            self.view.addSubview(curtain)
+            
+            if #available(iOS 11.0, tvOS 11.0, *) {
+                NSLayoutConstraint.activate([
+                    curtain.leadingAnchor.constraint(equalTo: self.view.safeAreaLayoutGuide.leadingAnchor),
+                    curtain.trailingAnchor.constraint(equalTo: self.view.safeAreaLayoutGuide.trailingAnchor),
+                    curtain.topAnchor.constraint(equalTo: self.view.safeAreaLayoutGuide.topAnchor),
+                    curtain.bottomAnchor.constraint(equalTo: self.view.safeAreaLayoutGuide.bottomAnchor),
+                ])
+            } else {
+                NSLayoutConstraint.activate([
+                    curtain.leadingAnchor.constraint(equalTo: self.view.leadingAnchor),
+                    curtain.trailingAnchor.constraint(equalTo: self.view.trailingAnchor),
+                    curtain.topAnchor.constraint(equalTo: self.view.topAnchor),
+                    curtain.bottomAnchor.constraint(equalTo: self.view.bottomAnchor),
+                ])
+            }
+            
+            return curtain
+        }()
 //    private var startingBarTintColor: UIColor?
 //    private var startingTintColor: UIColor?
         
@@ -130,9 +154,10 @@
             
             self.focusAreaView.clear()
             
-            self.previewLayer?.opacity = 0
-            UIView.animate(withDuration: 0.15, delay: 0.2, animations: {
-                self.previewLayer?.opacity = 1
+            
+            self.curtain.alpha = 1
+            UIView.animate(withDuration: 0.5, delay: 0.3, animations: {
+                self.curtain.alpha = 0
             })
         }
         
@@ -182,7 +207,8 @@
         }
         
         open override func viewDidDisappear(_ animated: Bool) {
-            self.previewLayer?.opacity = 0
+            self.curtain.alpha = 1
+            self.previewLayer?.session = nil
             
             stopCapturing()
             
@@ -201,6 +227,7 @@
         
         public func startCapturing() {
             sessionQueue.async {
+                self.previewLayer?.session = self.session
                 if !self.session.isRunning {
                     self.session.startRunning()
                 }
