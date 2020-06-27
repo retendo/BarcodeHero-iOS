@@ -54,6 +54,8 @@
         
         private let session = AVCaptureSession()
         
+        private let sessionQueue = DispatchQueue(label: "barcodehero.capturesession")
+        
 //    private var dismissOnScan: Bool = false
         private var hasLoaded: Bool = false
         private var previewLayer: AVCaptureVideoPreviewLayer?
@@ -107,7 +109,7 @@
             
             self.focusAreaView.clear()
             
-            self.session.startRunning()
+            startCapturing()
         }
         
         override open func viewWillAppear(_ animated: Bool) {
@@ -124,7 +126,7 @@
             
             edgesForExtendedLayout = UIRectEdge.all
             
-            self.session.startRunning()
+            startCapturing()
             
             self.focusAreaView.clear()
         }
@@ -169,7 +171,7 @@
         override open func viewWillDisappear(_ animated: Bool) {
             super.viewWillDisappear(animated)
             
-            self.session.stopRunning()
+            stopCapturing()
             
             // navigationController?.navigationBar.barTintColor = startingBarTintColor
             // navigationController?.navigationBar.tintColor = startingTintColor
@@ -179,11 +181,19 @@
         // MARK: Methods - Utilities
         
         public func stopCapturing() {
-            self.session.stopRunning()
+            sessionQueue.async {
+                if self.session.isRunning {
+                    self.session.stopRunning()
+                }
+            }
         }
         
         public func startCapturing() {
-            self.session.startRunning()
+            sessionQueue.async {
+                if !self.session.isRunning {
+                    self.session.startRunning()
+                }
+            }
         }
     }
     
