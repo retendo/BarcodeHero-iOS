@@ -1,4 +1,4 @@
-// Copyright © 2019 SpotHero, Inc. All rights reserved.
+// Copyright © 2020 SpotHero, Inc. All rights reserved.
 
 import AVFoundation
 import Foundation
@@ -20,11 +20,13 @@ public enum BHBarcodeType: String, CaseIterable {
     case pdf417 = "PDF417"
     case qr = "QR" // swiftlint:disable:this identifier_name
     case upce = "UPC-E"
-
+    
     public var isNative: Bool {
         return [.aztec, .code128, .pdf417, .qr].contains(self)
     }
-
+    
+    @available(tvOS, unavailable)
+    @available(watchOS, unavailable)
     public var metadataObjectType: AVMetadataObject.ObjectType? {
         switch self {
         case .aztec:
@@ -61,7 +63,9 @@ public enum BHBarcodeType: String, CaseIterable {
             return .upce
         }
     }
-
+    
+    @available(tvOS, unavailable)
+    @available(watchOS, unavailable)
     init?(metadataObjectType: AVMetadataObject.ObjectType) {
         switch metadataObjectType {
         case .aztec:
@@ -102,7 +106,7 @@ enum BHNativeCodeGeneratorType: String {
     case code128 = "CICode128BarcodeGenerator"
     case pdf417 = "CIPDF417BarcodeGenerator"
     case qr = "CIQRCodeGenerator" // swiftlint:disable:this identifier_name
-
+    
     init?(barcodeType: BHBarcodeType) throws {
         switch barcodeType {
         case .aztec:

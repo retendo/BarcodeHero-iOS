@@ -1,13 +1,7 @@
-# frozen_string_literal: true
-
 source 'https://rubygems.org'
 
-gem 'bundler', '~> 1.17.3'
-gem 'cocoapods', '~> 1.8.0'
-gem 'danger', '~> 6.1.0'
-gem 'danger-rubocop', '~> 0.7.0'
-gem 'danger-swiftlint', '~> 0.23.0'
-gem 'dotenv', '~> 2.7.5'
-gem 'fastlane', '~> 2.133.0'
-gem 'rubocop', '~> 0.75.0', require: false
-gem 'xcode-install', '~> 2.6.0'
+gem 'bundler', '~> 2.1.4'
+gem 'danger', '~> 8.0.0'
+gem 'danger-swiftformat', '~> 0.7.0'
+gem 'danger-swiftlint', '~> 0.24.1'
+gem 'xcpretty', '~> 0.3.0'

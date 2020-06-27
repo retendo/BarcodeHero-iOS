@@ -1,8 +1,11 @@
-// Copyright © 2019 SpotHero, Inc. All rights reserved.
+// Copyright © 2020 SpotHero, Inc. All rights reserved.
 
 import AVFoundation
-import CoreImage
 import Foundation
+
+#if canImport(CoreImage)
+    import CoreImage
+#endif
 
 #if canImport(UIKit)
     import UIKit
@@ -30,57 +33,57 @@ class BHImageHelper {
         guard !data.isEmpty else {
             throw BHError.dataRequired
         }
-
+        
         let options = options ?? BHBarcodeOptions()
-
+        
         let size = CGSize(width: CGFloat(data.count) + (Self.quietZoneSpacing * 2), height: Self.height)
-
+        
         guard let context = CGContext.from(size: size) else {
             throw BHError.couldNotGetGraphicsContext
         }
-
+        
         context.setShouldAntialias(false)
-
+        
         if let fillColor = options.fillColor {
             context.setFillColor(fillColor)
         }
-
+        
         if let strokeColor = options.strokeColor {
             context.setStrokeColor(strokeColor)
         }
-
+        
         context.fill(CGRect(origin: .zero, size: size))
         context.setLineWidth(Self.lineWidth)
-
+        
         for index in 0 ..< data.count {
             // 1 implies that nothing is drawn ("quiet zone")
             guard data[index] == "1" else {
                 continue
             }
-
+            
             let x = CGFloat(index) + (Self.quietZoneSpacing + 1)
             context.move(to: CGPoint(x: x, y: Self.topSpacing))
             context.addLine(to: CGPoint(x: x, y: size.height - Self.bottomSpacing))
         }
-
+        
         context.drawPath(using: CGPathDrawingMode.fillStroke)
-
+        
         return context.makeImage()
     }
-
+    
     static func resize(_ image: CGImage, scale: CGFloat) throws -> CGImage? {
         let width = CGFloat(image.width) * scale
         let height = CGFloat(image.height) * scale
         let size = CGSize(width: width, height: height)
-
+        
         guard let context = CGContext.from(size: size) else {
             throw BHError.couldNotGetGraphicsContext
         }
-
+        
         context.interpolationQuality = CGInterpolationQuality.none
-
+        
         context.draw(image, in: CGRect(origin: .zero, size: size))
-
+        
         return context.makeImage()
     }
 }
@@ -89,8 +92,8 @@ class BHImageHelper {
 
 // MARK: BHImageHelper
 
-#if canImport(UIKit)
-
+#if !os(watchOS) && canImport(UIKit)
+    
     extension BHImageHelper {
         static func resize(_ image: CGImage,
                            toSize targetSize: CGSize,
@@ -99,7 +102,7 @@ class BHImageHelper {
             var y: CGFloat = 0
             var width = targetSize.width
             var height = targetSize.height
-
+            
             switch contentMode {
             case .scaleToFill:
                 // do nothing
@@ -116,10 +119,10 @@ class BHImageHelper {
             default:
                 let scaledRect = AVMakeRect(aspectRatio: CGSize(width: image.width, height: image.height),
                                             insideRect: CGRect(x: 0.0, y: 0.0, width: targetSize.width, height: targetSize.height))
-
+                
                 width = scaledRect.width
                 height = scaledRect.height
-
+                
                 switch contentMode {
                 case .scaleAspectFit, .redraw, .center:
                     x = (targetSize.width - width) / 2.0
@@ -152,28 +155,28 @@ class BHImageHelper {
                     break
                 }
             }
-
+            
             guard let context = CGContext.from(size: targetSize) else {
                 throw BHError.couldNotGetGraphicsContext
             }
-
+            
             context.interpolationQuality = CGInterpolationQuality.none
             
             // this puts the origin of the coordinate system into the top-left for drawing,
             // which makes 2D codes orient properly when drawn
             context.translateBy(x: 0, y: height)
             context.scaleBy(x: 1, y: -1)
-
+            
             context.draw(image, in: CGRect(x: x, y: y, width: width, height: height))
-
+            
             guard let contextImage = context.makeImage() else {
                 throw BHError.couldNotCreateImageFromContext
             }
-
+            
             return contextImage
         }
     }
-
+    
 #endif
 
 // MARK: CGContext
@@ -182,21 +185,21 @@ private extension CGContext {
     static func from(width: Int, height: Int) -> CGContext? {
         return self.from(size: CGSize(width: width, height: height))
     }
-
+    
     static func from(size: CGSize) -> CGContext? {
         guard size.width > 0, size.height > 0 else {
             return nil
         }
-
+        
         var context: CGContext?
-
+        
         // If we can import UIKit, attempt to create the CGContext from the current UIGraphics context
         #if canImport(UIKit)
             UIGraphicsBeginImageContextWithOptions(size, false, 0)
-
+            
             context = UIGraphicsGetCurrentContext()
         #endif
-
+        
         // If context is nil, either because UIKit could not be imported or the UIGraphics context failed, create it
         if context == nil {
             context = CGContext(data: nil,
@@ -207,7 +210,7 @@ private extension CGContext {
                                 space: CGColorSpaceCreateDeviceRGB(),
                                 bitmapInfo: CGImageAlphaInfo.premultipliedLast.rawValue)
         }
-
+        
         return context
     }
 }
