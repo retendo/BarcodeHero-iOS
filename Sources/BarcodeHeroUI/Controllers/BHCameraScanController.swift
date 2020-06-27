@@ -129,6 +129,11 @@
             startCapturing()
             
             self.focusAreaView.clear()
+            
+            self.previewLayer?.opacity = 0
+            UIView.animate(withDuration: 0.15, delay: 0.2, animations: {
+                self.previewLayer?.opacity = 1
+            })
         }
         
         override open func viewDidLayoutSubviews() {
@@ -171,11 +176,17 @@
         override open func viewWillDisappear(_ animated: Bool) {
             super.viewWillDisappear(animated)
             
-            stopCapturing()
-            
             // navigationController?.navigationBar.barTintColor = startingBarTintColor
             // navigationController?.navigationBar.tintColor = startingTintColor
             // navigationController?.navigationBar.isTranslucent = false
+        }
+        
+        open override func viewDidDisappear(_ animated: Bool) {
+            self.previewLayer?.opacity = 0
+            
+            stopCapturing()
+            
+            super.viewDidDisappear(animated)
         }
         
         // MARK: Methods - Utilities
