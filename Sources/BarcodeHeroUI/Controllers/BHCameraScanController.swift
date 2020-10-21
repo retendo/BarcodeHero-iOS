@@ -202,7 +202,7 @@
                 let cutoutView = self.focusAreaView.cutoutView
                 let cutoutFrame = cutoutView.convert(cutoutView.bounds, to: self.view)
                 
-                self.backgroundView.mask(cutoutFrame, invert: true, cornerRadius: cutoutCornerRadius)
+                self.backgroundView.mask(cutoutFrame, invert: true, cornerRadius: self.cutoutCornerRadius)
                 
                 self.backgroundView.alpha = 1
                 self.focusAreaView.alpha = 1
