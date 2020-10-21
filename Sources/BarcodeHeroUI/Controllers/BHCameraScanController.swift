@@ -93,6 +93,8 @@
         
         private let metadataOutput = AVCaptureMetadataOutput()
         
+        private var isEvolving = false
+        
         public weak var delegate: BHCameraScanControllerDelegate?
         
         // MARK: Methods - Initializers
@@ -147,7 +149,6 @@
             
             self.focusAreaView.helpLabel.font = helpTextFont
             self.focusAreaView.helpLabel.textColor = helpTextColor
-            self.focusAreaView.helpLabel.text = helpText
             
             startCapturing()
         }
@@ -159,6 +160,8 @@
             
             startCapturing()
             
+            isEvolving = false
+            self.focusAreaView.helpLabel.text = helpText
             
             self.curtain.alpha = 1
             UIView.animate(withDuration: 0.5, delay: 0.3, animations: {
@@ -239,6 +242,24 @@
                     self.session.startRunning()
                 }
             }
+        }
+        
+        public func evolve(withText text: String) {
+            if isEvolving { return }
+            isEvolving = true
+            
+            self.focusAreaView.helpLabel.text = text
+            
+            let cutoutFrame = self.focusAreaView.cutoutView.convert(self.focusAreaView.cutoutView.bounds, to: self.view)
+            UIView.animateWithDisplayLink(duration: 0.2, animationHandler: { [weak self] percent in
+                guard let strongSelf = self else { return }
+                let newWidth = cutoutFrame.width * (1 - percent)
+                let newHeight = cutoutFrame.height * (1 - percent)
+                let xChange = (cutoutFrame.width - newWidth)/2
+                let yChange = (cutoutFrame.height - newHeight)/2
+                let newFrame = CGRect(x: cutoutFrame.minX + xChange, y: cutoutFrame.minY + yChange, width: newWidth, height: newHeight)
+                strongSelf.backgroundView.mask(newFrame, invert: true, cornerRadius: strongSelf.cutoutCornerRadius * (1 - percent))
+            }, completionHandler: nil)
         }
     }
     

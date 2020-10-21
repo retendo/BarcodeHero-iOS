@@ -10,7 +10,7 @@
         // MARK: Constants
         
         private static let cutoutHeight: CGFloat = 144
-        private static let labelWidth: CGFloat = 176
+        private static let labelWidth: CGFloat = 216
         
         // MARK: Properties - Views
         
