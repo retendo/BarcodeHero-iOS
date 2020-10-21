@@ -9,26 +9,16 @@
     class BHFocusAreaView: UIView {
         // MARK: Constants
         
-        private static let cutoutHeight: CGFloat = 170
-        private static let labelHeight: CGFloat = 40
-        private static let width: CGFloat = 255
+        private static let cutoutHeight: CGFloat = 144
+        private static let labelWidth: CGFloat = 176
         
         // MARK: Properties - Views
         
-        private lazy var barcodeDataLabel: UILabel = {
-            let dataLabel = UILabel()
-            dataLabel.textAlignment = .center
-            dataLabel.translatesAutoresizingMaskIntoConstraints = false
-            dataLabel.heightAnchor.constraint(equalToConstant: Self.labelHeight).isActive = true
-            
-            return dataLabel
-        }()
-        
-        private lazy var barcodeTypeLabel: UILabel = {
+        private(set) lazy var helpLabel: UILabel = {
             let typeLabel = UILabel()
             typeLabel.textAlignment = .center
             typeLabel.translatesAutoresizingMaskIntoConstraints = false
-            typeLabel.heightAnchor.constraint(equalToConstant: Self.labelHeight).isActive = true
+            typeLabel.numberOfLines = 0
             
             return typeLabel
         }()
@@ -36,31 +26,11 @@
         private(set) lazy var cutoutView: UIView = {
             let cutoutView = UIView()
             cutoutView.translatesAutoresizingMaskIntoConstraints = false
-            cutoutView.heightAnchor.constraint(equalToConstant: Self.cutoutHeight).isActive = true
-            cutoutView.widthAnchor.constraint(equalToConstant: Self.width).isActive = true
+            cutoutView.layer.cornerRadius = 0
+            cutoutView.layer.masksToBounds = true
             
             return cutoutView
         }()
-        
-        // MARK: Properties - Convenience
-        
-        var barcodeData: String? {
-            get {
-                return self.barcodeDataLabel.text
-            }
-            set {
-                self.barcodeDataLabel.text = newValue
-            }
-        }
-        
-        var barcodeType: String? {
-            get {
-                return self.barcodeTypeLabel.text
-            }
-            set {
-                self.barcodeTypeLabel.text = newValue
-            }
-        }
         
         // MARK: Methods - Lifecycle
         
@@ -72,21 +42,23 @@
             let stackView = UIStackView()
             stackView.axis = .vertical
             stackView.translatesAutoresizingMaskIntoConstraints = false
-            stackView.spacing = 8
+            stackView.spacing = 16
             
-            stackView.addArrangedSubview(self.barcodeDataLabel)
             stackView.addArrangedSubview(self.cutoutView)
-            stackView.addArrangedSubview(self.barcodeTypeLabel)
+            stackView.addArrangedSubview(self.helpLabel)
             
             self.addSubview(stackView)
             
-            let totalSpacing = stackView.spacing * CGFloat(stackView.arrangedSubviews.count - 1)
-            let height = (Self.labelHeight * 2) + Self.cutoutHeight + totalSpacing
+            cutoutView.heightAnchor.constraint(equalToConstant: Self.cutoutHeight).isActive = true
+            cutoutView.leadingAnchor.constraint(equalTo: self.leadingAnchor, constant: 32).isActive = true
+            cutoutView.trailingAnchor.constraint(equalTo: self.trailingAnchor, constant: -32).isActive = true
+            
+            helpLabel.widthAnchor.constraint(equalToConstant: Self.labelWidth).isActive = true
             
             NSLayoutConstraint.activate([
                 // Activate height and width constraints for this view
-                self.heightAnchor.constraint(equalToConstant: height),
-                self.widthAnchor.constraint(equalToConstant: Self.width),
+                self.heightAnchor.constraint(equalTo: stackView.heightAnchor),
+                self.widthAnchor.constraint(equalToConstant: UIScreen.main.bounds.width),
                 // Activate pinning constraints for the embedded stack view
                 stackView.leadingAnchor.constraint(equalTo: self.leadingAnchor),
                 stackView.trailingAnchor.constraint(equalTo: self.trailingAnchor),
@@ -97,13 +69,6 @@
         
         required convenience init?(coder: NSCoder) {
             self.init()
-        }
-        
-        // MARK: Methods - Utilities
-        
-        func clear() {
-            self.barcodeData = nil
-            self.barcodeType = nil
         }
     }
     

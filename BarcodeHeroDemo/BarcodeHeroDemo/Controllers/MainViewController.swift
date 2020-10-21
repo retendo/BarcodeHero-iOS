@@ -13,8 +13,10 @@ class MainViewController: UITableViewController {
         case 1:
             switch indexPath.row {
             case 0:
-                let controller = BHCameraScanController()
-                show(controller, sender: nil)
+                let controller = BHCameraScanController(helpTextColor: UIColor(red: 251/255, green: 244/255, blue: 228/255, alpha: 1), cutoutCornerRadius: 10)
+                let navController = UINavigationController(rootViewController: controller)
+                present(navController, animated: true, completion: nil)
+                //show(controller, sender: nil)
             default:
                 break
             }

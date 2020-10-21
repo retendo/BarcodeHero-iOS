@@ -46,7 +46,7 @@
             
             NSLayoutConstraint.activate([
                 focusAreaView.centerXAnchor.constraint(equalTo: self.view.centerXAnchor),
-                focusAreaView.centerYAnchor.constraint(equalTo: self.view.centerYAnchor),
+                focusAreaView.centerYAnchor.constraint(equalTo: self.view.centerYAnchor, constant: -48),
             ])
             
             return focusAreaView
@@ -86,11 +86,24 @@
 //    private var startingBarTintColor: UIColor?
 //    private var startingTintColor: UIColor?
         
+        private var helpText: String = "Focus the barcode inside\nthe rectangle above"
+        private var helpTextColor: UIColor = .white
+        private var helpTextFont: UIFont = .systemFont(ofSize: 20, weight: .regular)
+        private var cutoutCornerRadius: CGFloat = 4.0
+        
         public weak var delegate: BHCameraScanControllerDelegate?
         
         // MARK: Methods - Initializers
         
-        public init() {
+        public init(helpText: String? = nil,
+                    helpTextColor: UIColor? = nil,
+                    helpTextFont: UIFont? = nil,
+                    cutoutCornerRadius: CGFloat? = nil) {
+            if let helpText = helpText { self.helpText = helpText }
+            if let helpTextColor = helpTextColor { self.helpTextColor = helpTextColor }
+            if let helpTextFont = helpTextFont { self.helpTextFont = helpTextFont }
+            if let cutoutCornerRadius = cutoutCornerRadius { self.cutoutCornerRadius = cutoutCornerRadius }
+            
             super.init(nibName: nil, bundle: nil)
         }
         
@@ -131,7 +144,9 @@
                 view.layer.addSublayer(previewLayer)
             }
             
-            self.focusAreaView.clear()
+            self.focusAreaView.helpLabel.font = helpTextFont
+            self.focusAreaView.helpLabel.textColor = helpTextColor
+            self.focusAreaView.helpLabel.text = helpText
             
             startCapturing()
         }
@@ -151,8 +166,6 @@
             edgesForExtendedLayout = UIRectEdge.all
             
             startCapturing()
-            
-            self.focusAreaView.clear()
             
             
             self.curtain.alpha = 1
@@ -189,7 +202,7 @@
                 let cutoutView = self.focusAreaView.cutoutView
                 let cutoutFrame = cutoutView.convert(cutoutView.bounds, to: self.view)
                 
-                self.backgroundView.mask(cutoutFrame, invert: true)
+                self.backgroundView.mask(cutoutFrame, invert: true, cornerRadius: cutoutCornerRadius)
                 
                 self.backgroundView.alpha = 1
                 self.focusAreaView.alpha = 1
@@ -255,11 +268,6 @@
                                    from connection: AVCaptureConnection) {
             guard self.session.isRunning else {
                 return
-            }
-            
-            if let metadataObject = metadataObjects.first as? AVMetadataMachineReadableCodeObject {
-                self.focusAreaView.barcodeData = metadataObject.stringValue
-                self.focusAreaView.barcodeType = String(describing: metadataObject.type.rawValue)
             }
             
             self.delegate?.didCapture(metadataObjects: metadataObjects, from: self)

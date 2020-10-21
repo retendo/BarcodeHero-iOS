@@ -7,7 +7,7 @@
     import UIKit
     
     extension UIView {
-        func mask(_ maskRect: CGRect, invert: Bool = false) {
+        func mask(_ maskRect: CGRect, invert: Bool = false, cornerRadius: CGFloat) {
             let maskLayer = CAShapeLayer()
             let path = CGMutablePath()
             
@@ -15,7 +15,7 @@
                 path.addRect(bounds)
             }
             
-            path.addRoundedRect(in: maskRect, cornerWidth: 4.0, cornerHeight: 4.0)
+            path.addRoundedRect(in: maskRect, cornerWidth: cornerRadius, cornerHeight: cornerRadius)
             
             maskLayer.path = path
             
