@@ -167,6 +167,13 @@
             UIView.animate(withDuration: 0.5, delay: 0.3, animations: {
                 self.curtain.alpha = 0
             })
+            
+            guard !self.hasLoaded else {
+                let cutoutView = self.focusAreaView.cutoutView
+                let cutoutFrame = cutoutView.convert(cutoutView.bounds, to: self.view)
+                self.backgroundView.mask(cutoutFrame, invert: true, cornerRadius: self.cutoutCornerRadius)
+                return
+            }
         }
         
         override open func viewDidLayoutSubviews() {
