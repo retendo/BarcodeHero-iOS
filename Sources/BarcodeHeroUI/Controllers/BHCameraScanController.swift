@@ -91,6 +91,8 @@
         private var helpTextFont: UIFont = .systemFont(ofSize: 20, weight: .regular)
         private var cutoutCornerRadius: CGFloat = 4.0
         
+        private let metadataOutput = AVCaptureMetadataOutput()
+        
         public weak var delegate: BHCameraScanControllerDelegate?
         
         // MARK: Methods - Initializers
@@ -133,10 +135,9 @@
                 self.session.addInput(input)
             }
             
-            let output = AVCaptureMetadataOutput()
-            output.setMetadataObjectsDelegate(self, queue: DispatchQueue.main)
-            self.session.addOutput(output)
-            output.metadataObjectTypes = output.availableMetadataObjectTypes
+            metadataOutput.setMetadataObjectsDelegate(self, queue: DispatchQueue.main)
+            self.session.addOutput(metadataOutput)
+            metadataOutput.metadataObjectTypes = [.ean13, .ean8, .upce]
             
             self.previewLayer = AVCaptureVideoPreviewLayer(session: self.session)
             
@@ -153,15 +154,6 @@
         
         override open func viewWillAppear(_ animated: Bool) {
             super.viewWillAppear(animated)
-            
-//        startingBarTintColor = navigationController?.navigationBar.barTintColor
-//        startingTintColor = navigationController?.navigationBar.tintColor
-            
-//        navigationController?.navigationBar.setBackgroundImage(UIImage(), for: .default)
-//        navigationController?.navigationBar.shadowImage = UIImage()
-//        navigationController?.navigationBar.isTranslucent = true
-//        navigationController?.navigationBar.tintColor = UIColor.white
-//        navigationController?.view.backgroundColor = .clear
             
             edgesForExtendedLayout = UIRectEdge.all
             
@@ -198,14 +190,16 @@
                 return
             }
             
-            UIView.animate(withDuration: 0.35) {
-                let cutoutView = self.focusAreaView.cutoutView
-                let cutoutFrame = cutoutView.convert(cutoutView.bounds, to: self.view)
-                
+            let cutoutView = self.focusAreaView.cutoutView
+            let cutoutFrame = cutoutView.convert(cutoutView.bounds, to: self.view)
+            
+            UIView.animate(withDuration: 0.35, animations: {
                 self.backgroundView.mask(cutoutFrame, invert: true, cornerRadius: self.cutoutCornerRadius)
                 
                 self.backgroundView.alpha = 1
                 self.focusAreaView.alpha = 1
+            }) { _ in
+                self.metadataOutput.rectOfInterest = self.previewLayer?.metadataOutputRectConverted(fromLayerRect: cutoutFrame) ?? CGRect(x: 0, y: 0, width: 1, height: 1)
             }
             
             self.hasLoaded = true
