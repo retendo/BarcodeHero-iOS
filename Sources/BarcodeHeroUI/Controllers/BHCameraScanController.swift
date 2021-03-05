@@ -251,6 +251,29 @@
             }
         }
         
+        public enum FlashStatus {
+            case off, on, unavailable
+        }
+        public func getFlashStatus() -> FlashStatus {
+            guard let avDevice = AVCaptureDevice.default(for: .video), avDevice.hasTorch, avDevice.isTorchAvailable else { return .unavailable }
+            return avDevice.isTorchActive ? .on : .off
+        }
+        public func toggleFlashStatus() -> FlashStatus {
+            guard let avDevice = AVCaptureDevice.default(for: .video), avDevice.hasTorch, avDevice.isTorchAvailable, (try? avDevice.lockForConfiguration()) != nil else {
+                AVCaptureDevice.default(for: .video)?.unlockForConfiguration()
+                return .unavailable
+            }
+            defer { avDevice.unlockForConfiguration() }
+
+            if avDevice.isTorchActive {
+                avDevice.torchMode = AVCaptureDevice.TorchMode.off
+                return .off
+            } else {
+                avDevice.torchMode = AVCaptureDevice.TorchMode.on
+                return .on
+            }
+        }
+        
         public func evolve(withText text: String) {
             if isEvolving { return }
             isEvolving = true
