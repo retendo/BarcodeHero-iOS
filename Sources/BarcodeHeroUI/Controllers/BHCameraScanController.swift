@@ -291,6 +291,15 @@
                 strongSelf.backgroundView.mask(newFrame, invert: true, cornerRadius: strongSelf.cutoutCornerRadius * (1 - percent))
             }, completionHandler: nil)
         }
+        
+        public func devolve() {
+            guard isEvolving else { return }
+            isEvolving = false
+            focusAreaView.helpLabel.text = nil
+            
+            let cutoutFrame = focusAreaView.cutoutView.convert(focusAreaView.cutoutView.bounds, to: view)
+            backgroundView.mask(cutoutFrame, invert: true, cornerRadius: self.cutoutCornerRadius)
+        }
     }
     
     // MARK: - Classes
