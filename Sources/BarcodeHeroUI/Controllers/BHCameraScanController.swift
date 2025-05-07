@@ -279,7 +279,7 @@
         }
         
         public func evolve(withMode mode: BHScanMode) {
-            if isEvolving { return }
+            if !hasLoaded || isEvolving { return }
             isEvolving = true
             
             switch mode {
