@@ -83,6 +83,10 @@
             
             return curtain
         }()
+        
+        // Photo capture
+        private lazy var photoOutput = AVCapturePhotoOutput()
+        
 //    private var startingBarTintColor: UIColor?
 //    private var startingTintColor: UIColor?
         
@@ -90,10 +94,12 @@
         private var helpTextColor: UIColor = .white
         private var helpTextFont: UIFont = .systemFont(ofSize: 20, weight: .regular)
         private var cutoutCornerRadius: CGFloat = 4.0
+        private var jpegQuality: CGFloat = 0.95
         
         private let metadataOutput = AVCaptureMetadataOutput()
         
         private var isEvolving = false
+        private var currentMode: BHScanMode = .scan
         
         public weak var delegate: BHCameraScanControllerDelegate?
         
@@ -102,11 +108,13 @@
         public init(helpText: String? = nil,
                     helpTextColor: UIColor? = nil,
                     helpTextFont: UIFont? = nil,
-                    cutoutCornerRadius: CGFloat? = nil) {
+                    cutoutCornerRadius: CGFloat? = nil,
+                    jpegQuality: CGFloat? = nil) {
             if let helpText = helpText { self.helpText = helpText }
             if let helpTextColor = helpTextColor { self.helpTextColor = helpTextColor }
             if let helpTextFont = helpTextFont { self.helpTextFont = helpTextFont }
             if let cutoutCornerRadius = cutoutCornerRadius { self.cutoutCornerRadius = cutoutCornerRadius }
+            if let jpegQuality = jpegQuality { self.jpegQuality = jpegQuality }
             
             super.init(nibName: nil, bundle: nil)
         }
@@ -135,6 +143,11 @@
                 device.unlockForConfiguration()
                 
                 self.session.addInput(input)
+                
+                // Add the photo output to the session
+                if self.session.canAddOutput(photoOutput) {
+                    self.session.addOutput(photoOutput)
+                }
             }
             
             metadataOutput.setMetadataObjectsDelegate(self, queue: DispatchQueue.main)
@@ -143,6 +156,7 @@
             
             self.previewLayer = AVCaptureVideoPreviewLayer(session: self.session)
             
+            view.backgroundColor = .black
             if let previewLayer = previewLayer {
                 view.layer.addSublayer(previewLayer)
             }
@@ -200,17 +214,7 @@
                 return
             }
             
-            let cutoutView = self.focusAreaView.cutoutView
-            let cutoutFrame = cutoutView.convert(cutoutView.bounds, to: self.view)
-            
-            UIView.animate(withDuration: 0.35, animations: {
-                self.backgroundView.mask(cutoutFrame, invert: true, cornerRadius: self.cutoutCornerRadius)
-                
-                self.backgroundView.alpha = 1
-                self.focusAreaView.alpha = 1
-            }) { _ in
-                self.metadataOutput.rectOfInterest = self.previewLayer?.metadataOutputRectConverted(fromLayerRect: cutoutFrame) ?? CGRect(x: 0, y: 0, width: 1, height: 1)
-            }
+            evolve(withMode: .scan)
             
             self.hasLoaded = true
         }
@@ -274,32 +278,117 @@
             }
         }
         
-        public func evolve(withText text: String) {
+        public func evolve(withMode mode: BHScanMode) {
             if isEvolving { return }
             isEvolving = true
             
-            self.focusAreaView.helpLabel.text = text
+            switch mode {
+            case .scan:
+                self.focusAreaView.helpLabel.text = helpText
+            case .capture:
+                self.focusAreaView.helpLabel.text = ""
+            case .processing(let text):
+                self.focusAreaView.helpLabel.text = text
+            }
             
-            let cutoutFrame = self.focusAreaView.cutoutView.convert(self.focusAreaView.cutoutView.bounds, to: self.view)
+            func getTargetFrame(mode: BHScanMode) -> CGRect {
+                let scanCutoutFrame = self.focusAreaView.cutoutView.convert(self.focusAreaView.cutoutView.bounds, to: self.view).offsetBy(dx: 0, dy: -24)
+                switch mode {
+                case .scan:
+                    return scanCutoutFrame
+                case .capture:
+                    return view.bounds
+                case .processing:
+                    return CGRect(
+                        x: scanCutoutFrame.midX,
+                        y: scanCutoutFrame.midY,
+                        width: 0,
+                        height: 0
+                    )
+                }
+            }
+            
+            func getTargetCornerRadius(mode: BHScanMode) -> CGFloat {
+                switch mode {
+                case .scan, .capture:
+                    return cutoutCornerRadius
+                case .processing:
+                    return 0
+                }
+            }
+            
+            let startFrame = getTargetFrame(mode: currentMode)
+            let targetFrame = getTargetFrame(mode: mode)
+            
+            let startCornerRadius = getTargetCornerRadius(mode: currentMode)
+            let targetCornerRadius = getTargetCornerRadius(mode: mode)
+            
             UIView.animateWithDisplayLink(duration: 0.2, animationHandler: { [weak self] percent in
-                guard let strongSelf = self else { return }
-                let newWidth = cutoutFrame.width * (1 - percent)
-                let newHeight = cutoutFrame.height * (1 - percent)
-                let xChange = (cutoutFrame.width - newWidth)/2
-                let yChange = (cutoutFrame.height - newHeight)/2
-                let newFrame = CGRect(x: cutoutFrame.minX + xChange, y: cutoutFrame.minY + yChange, width: newWidth, height: newHeight)
-                strongSelf.backgroundView.mask(newFrame, invert: true, cornerRadius: strongSelf.cutoutCornerRadius * (1 - percent))
-            }, completionHandler: nil)
+                guard let self else { return }
+                
+                // Calculate new frame by interpolating between start and target frames
+                let newWidth = startFrame.width + (targetFrame.width - startFrame.width) * percent
+                let newHeight = startFrame.height + (targetFrame.height - startFrame.height) * percent
+                
+                // Calculate new origin to keep the frame centered
+                let newX = startFrame.minX + (targetFrame.minX - startFrame.minX) * percent
+                let newY = startFrame.minY + (targetFrame.minY - startFrame.minY) * percent
+                
+                let newFrame = CGRect(x: newX, y: newY, width: newWidth, height: newHeight)
+                
+                // Calculate new corner radius by linear interpolation
+                let newCornerRadius = startCornerRadius + (targetCornerRadius - startCornerRadius) * percent
+                
+                // Apply the mask with the new frame and corner radius
+                backgroundView.mask(newFrame, invert: true, cornerRadius: newCornerRadius)
+                
+                backgroundView.alpha = 1
+                focusAreaView.alpha = 1
+                
+            }, completionHandler: { [weak self] in
+                guard let self else { return }
+                // Update the metadataOutput rectOfInterest if in scan mode
+                // Enable/disable barcode detection based on mode
+                if case .scan = mode {
+                    metadataOutput.rectOfInterest = previewLayer?.metadataOutputRectConverted(fromLayerRect: targetFrame) ?? CGRect(x: 0, y: 0, width: 1, height: 1)
+                    metadataOutput.setMetadataObjectsDelegate(self, queue: DispatchQueue.main)
+                } else {
+                    metadataOutput.setMetadataObjectsDelegate(nil, queue: nil)
+                }
+                
+                currentMode = mode
+                isEvolving = false
+            })
+        }
+        
+        // Add a method to capture a still photo
+        public func capturePhoto() {
+            guard session.isRunning else {
+                self.delegate?.didCaptureImage?(image: nil, from: self)
+                return
+            }
+            
+            sessionQueue.async {
+                let photoSettings = AVCapturePhotoSettings()
+                self.photoOutput.capturePhoto(with: photoSettings, delegate: self)
+            }
         }
     }
     
     // MARK: - Classes
+
+    public enum BHScanMode {
+        case scan
+        case capture
+        case processing(text: String)
+    }
     
     @available(iOS 9.0, *)
     @available(tvOS, unavailable)
     @available(watchOS, unavailable)
-    public protocol BHCameraScanControllerDelegate: AnyObject {
-        func didCapture(metadataObjects: [AVMetadataObject], from controller: BHCameraScanController)
+    @objc public protocol BHCameraScanControllerDelegate: AnyObject {
+        func didCaptureBarcodes(metadataObjects: [AVMetadataObject], from controller: BHCameraScanController)
+        @objc optional func didCaptureImage(image: UIImage?, from controller: BHCameraScanController)
     }
     
     // MARK: - Extensions
@@ -315,7 +404,42 @@
                 return
             }
             
-            self.delegate?.didCapture(metadataObjects: metadataObjects, from: self)
+            self.delegate?.didCaptureBarcodes(metadataObjects: metadataObjects, from: self)
+        }
+    }
+
+    @available(iOS 11.0, *)
+    @available(tvOS, unavailable)
+    @available(watchOS, unavailable)
+    extension BHCameraScanController: AVCapturePhotoCaptureDelegate {
+        public func photoOutput(_ output: AVCapturePhotoOutput, didFinishProcessingPhoto photo: AVCapturePhoto, error: Error?) {
+            guard let imageData = photo.fileDataRepresentation(),
+                  let image = UIImage(data: imageData) else {
+                DispatchQueue.main.async {
+                    self.delegate?.didCaptureImage?(image: nil, from: self)
+                }
+                return
+            }
+            
+            DispatchQueue.main.async {
+                self.delegate?.didCaptureImage?(image: image, from: self)
+            }
+        }
+        
+        // For iOS 10 compatibility
+        public func photoOutput(_ output: AVCapturePhotoOutput, didFinishProcessingPhoto photoSampleBuffer: CMSampleBuffer?, previewPhoto previewPhotoSampleBuffer: CMSampleBuffer?, resolvedSettings: AVCaptureResolvedPhotoSettings, bracketSettings: AVCaptureBracketedStillImageSettings?, error: Error?) {
+            guard let photoSampleBuffer = photoSampleBuffer,
+                  let imageData = AVCapturePhotoOutput.jpegPhotoDataRepresentation(forJPEGSampleBuffer: photoSampleBuffer, previewPhotoSampleBuffer: previewPhotoSampleBuffer),
+                  let image = UIImage(data: imageData) else {
+                DispatchQueue.main.async {
+                    self.delegate?.didCaptureImage?(image: nil, from: self)
+                }
+                return
+            }
+            
+            DispatchQueue.main.async {
+                self.delegate?.didCaptureImage?(image: image, from: self)
+            }
         }
     }
     

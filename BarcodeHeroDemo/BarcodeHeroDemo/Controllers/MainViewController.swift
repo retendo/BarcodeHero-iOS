@@ -5,8 +5,24 @@ import UIKit
 import AVKit
 
 class MainViewController: UITableViewController, BHCameraScanControllerDelegate {
-    func didCapture(metadataObjects: [AVMetadataObject], from controller: BHCameraScanController) {
-        controller.evolve(withText: "Barcode found!\nProcessing...")
+    private var onlyOnce = true
+    func didCaptureBarcodes(metadataObjects: [AVMetadataObject], from controller: BHCameraScanController) {
+        guard onlyOnce else { return }
+        onlyOnce = false
+        controller.evolve(withMode: .processing(text: "Barcode found!\nProcessing..."))
+        DispatchQueue.main.asyncAfter(deadline: .now() + 3) {
+            controller.evolve(withMode: .capture)
+            DispatchQueue.main.asyncAfter(deadline: .now() + 3) {
+                controller.capturePhoto()
+            }
+        }
+    }
+    func didCaptureImage(image: UIImage?, from controller: BHCameraScanController) {
+        print("Image size: \(image?.size.debugDescription ?? "(none)")")
+        DispatchQueue.main.asyncAfter(deadline: .now() + 3) { [weak self] in
+            controller.evolve(withMode: .scan)
+            self?.onlyOnce = true
+        }
     }
     
     // MARK: - Methods

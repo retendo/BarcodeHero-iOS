@@ -25,7 +25,7 @@ class ReaderDelegationController: UIViewController {
 }
 
 extension ReaderDelegationController: BHCameraScanControllerDelegate {
-    func didCapture(metadataObjects: [AVMetadataObject], from controller: BHCameraScanController) {
+    func didCaptureBarcodes(metadataObjects: [AVMetadataObject], from controller: BHCameraScanController) {
         let firstObject = metadataObjects.first as? AVMetadataMachineReadableCodeObject
         
         self.dataLabel?.text = firstObject?.stringValue
