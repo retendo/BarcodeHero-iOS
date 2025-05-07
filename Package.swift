@@ -7,8 +7,8 @@ import PackageDescription
 let package = Package(
     name: "BarcodeHero",
     platforms: [
-        .iOS(.v8),          // minimum supported version via SPM
-        .macOS(.v10_15),    // supports AVMetaDataObject.ObjectType barcode and QR code types
+        .iOS("12.0"),          // minimum supported version via SPM
+        .macOS("10.15"),    // supports AVMetaDataObject.ObjectType barcode and QR code types
         // tvOS is unsupported due to lack of AVMetadataObject support
         // watchOS is unsupported due to lack of CoreImage support
     ],
