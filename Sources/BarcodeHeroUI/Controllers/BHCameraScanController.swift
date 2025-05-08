@@ -15,38 +15,32 @@
         // MARK: Properties
         
         private lazy var backgroundView: UIView = {
-            let backgroundView = UIView(frame: UIScreen.main.bounds)
+            let backgroundView = UIView(frame: .zero)
             backgroundView.backgroundColor = UIColor.black.withAlphaComponent(0.65)
+            backgroundView.translatesAutoresizingMaskIntoConstraints = false
             
             self.view.addSubview(backgroundView)
             
-            if #available(iOS 11.0, tvOS 11.0, *) {
-                NSLayoutConstraint.activate([
-                    backgroundView.leadingAnchor.constraint(equalTo: self.view.safeAreaLayoutGuide.leadingAnchor),
-                    backgroundView.trailingAnchor.constraint(equalTo: self.view.safeAreaLayoutGuide.trailingAnchor),
-                    backgroundView.topAnchor.constraint(equalTo: self.view.safeAreaLayoutGuide.topAnchor),
-                    backgroundView.bottomAnchor.constraint(equalTo: self.view.safeAreaLayoutGuide.bottomAnchor),
-                ])
-            } else {
-                NSLayoutConstraint.activate([
-                    backgroundView.leadingAnchor.constraint(equalTo: self.view.leadingAnchor),
-                    backgroundView.trailingAnchor.constraint(equalTo: self.view.trailingAnchor),
-                    backgroundView.topAnchor.constraint(equalTo: self.view.topAnchor),
-                    backgroundView.bottomAnchor.constraint(equalTo: self.view.bottomAnchor),
-                ])
-            }
+            NSLayoutConstraint.activate([
+                backgroundView.leadingAnchor.constraint(equalTo: self.view.leadingAnchor),
+                backgroundView.trailingAnchor.constraint(equalTo: self.view.trailingAnchor),
+                backgroundView.topAnchor.constraint(equalTo: self.view.topAnchor),
+                backgroundView.bottomAnchor.constraint(equalTo: self.view.bottomAnchor),
+            ])
             
             return backgroundView
         }()
         
         private lazy var focusAreaView: BHFocusAreaView = {
             let focusAreaView = BHFocusAreaView()
+            focusAreaView.translatesAutoresizingMaskIntoConstraints = false
             
             self.view.addSubview(focusAreaView)
             
             NSLayoutConstraint.activate([
                 focusAreaView.centerXAnchor.constraint(equalTo: self.view.centerXAnchor),
                 focusAreaView.centerYAnchor.constraint(equalTo: self.view.centerYAnchor, constant: -48),
+                focusAreaView.widthAnchor.constraint(equalTo: self.view.widthAnchor)
             ])
             
             return focusAreaView
@@ -60,26 +54,18 @@
         private var hasLoaded: Bool = false
         private var previewLayer: AVCaptureVideoPreviewLayer?
         private lazy var curtain: UIView = {
-            let curtain = UIView(frame: UIScreen.main.bounds)
+            let curtain = UIView(frame: .zero)
             curtain.backgroundColor = UIColor.black
+            curtain.translatesAutoresizingMaskIntoConstraints = false;
             
             self.view.addSubview(curtain)
             
-            if #available(iOS 11.0, tvOS 11.0, *) {
-                NSLayoutConstraint.activate([
-                    curtain.leadingAnchor.constraint(equalTo: self.view.safeAreaLayoutGuide.leadingAnchor),
-                    curtain.trailingAnchor.constraint(equalTo: self.view.safeAreaLayoutGuide.trailingAnchor),
-                    curtain.topAnchor.constraint(equalTo: self.view.safeAreaLayoutGuide.topAnchor),
-                    curtain.bottomAnchor.constraint(equalTo: self.view.safeAreaLayoutGuide.bottomAnchor),
-                ])
-            } else {
-                NSLayoutConstraint.activate([
-                    curtain.leadingAnchor.constraint(equalTo: self.view.leadingAnchor),
-                    curtain.trailingAnchor.constraint(equalTo: self.view.trailingAnchor),
-                    curtain.topAnchor.constraint(equalTo: self.view.topAnchor),
-                    curtain.bottomAnchor.constraint(equalTo: self.view.bottomAnchor),
-                ])
-            }
+            NSLayoutConstraint.activate([
+                curtain.leadingAnchor.constraint(equalTo: self.view.leadingAnchor),
+                curtain.trailingAnchor.constraint(equalTo: self.view.trailingAnchor),
+                curtain.topAnchor.constraint(equalTo: self.view.topAnchor),
+                curtain.bottomAnchor.constraint(equalTo: self.view.bottomAnchor),
+            ])
             
             return curtain
         }()

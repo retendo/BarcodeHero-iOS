@@ -7,11 +7,6 @@
     
     @available(iOS 9.0, *)
     class BHFocusAreaView: UIView {
-        // MARK: Constants
-        
-        private static let cutoutHeight: CGFloat = 144
-        private static let labelWidth: CGFloat = 216
-        
         // MARK: Properties - Views
         
         private(set) lazy var helpLabel: UILabel = {
@@ -34,36 +29,28 @@
         
         // MARK: Methods - Lifecycle
         
-        init() {
+        init(cutoutHeight: CGFloat = 144, maxLabelWidth: CGFloat = 300) {
             super.init(frame: .zero)
             
             self.translatesAutoresizingMaskIntoConstraints = false
             
-            let stackView = UIStackView()
-            stackView.axis = .vertical
-            stackView.translatesAutoresizingMaskIntoConstraints = false
-            stackView.spacing = 16
-            
-            stackView.addArrangedSubview(self.cutoutView)
-            stackView.addArrangedSubview(self.helpLabel)
-            
-            self.addSubview(stackView)
-            
-            cutoutView.heightAnchor.constraint(equalToConstant: Self.cutoutHeight).isActive = true
-            cutoutView.leadingAnchor.constraint(equalTo: self.leadingAnchor, constant: 32).isActive = true
-            cutoutView.trailingAnchor.constraint(equalTo: self.trailingAnchor, constant: -32).isActive = true
-            
-            helpLabel.widthAnchor.constraint(equalToConstant: Self.labelWidth).isActive = true
+            self.addSubview(self.cutoutView)
+            self.addSubview(self.helpLabel)
             
             NSLayoutConstraint.activate([
-                // Activate height and width constraints for this view
-                self.heightAnchor.constraint(equalTo: stackView.heightAnchor),
-                self.widthAnchor.constraint(equalToConstant: UIScreen.main.bounds.width),
-                // Activate pinning constraints for the embedded stack view
-                stackView.leadingAnchor.constraint(equalTo: self.leadingAnchor),
-                stackView.trailingAnchor.constraint(equalTo: self.trailingAnchor),
-                stackView.topAnchor.constraint(equalTo: self.topAnchor),
-                stackView.bottomAnchor.constraint(equalTo: self.bottomAnchor),
+                // Vertical constraints
+                cutoutView.topAnchor.constraint(equalTo: self.topAnchor),
+                cutoutView.heightAnchor.constraint(equalToConstant: cutoutHeight),
+                helpLabel.topAnchor.constraint(equalTo: cutoutView.bottomAnchor, constant: 16),
+                helpLabel.bottomAnchor.constraint(equalTo: self.bottomAnchor),
+                
+                // Horizontal constraints
+                cutoutView.leadingAnchor.constraint(equalTo: self.leadingAnchor, constant: 32),
+                cutoutView.trailingAnchor.constraint(equalTo: self.trailingAnchor, constant: -32),
+                
+                helpLabel.centerXAnchor.constraint(equalTo: self.centerXAnchor),
+                helpLabel.widthAnchor.constraint(lessThanOrEqualToConstant: maxLabelWidth),
+                helpLabel.widthAnchor.constraint(lessThanOrEqualTo: self.widthAnchor, constant: -32)
             ])
         }
         
