@@ -102,6 +102,7 @@
         private var currentMode: BHScanMode = .scan
         
         public weak var delegate: BHCameraScanControllerDelegate?
+        public weak var imageCaptureDelegate: BHCameraScanControllerImageCaptureDelegate?
         
         // MARK: Methods - Initializers
         
@@ -306,9 +307,9 @@
             
             func getTargetCornerRadius(mode: BHScanMode) -> CGFloat {
                 switch mode {
-                case .scan, .capture:
+                case .scan:
                     return cutoutCornerRadius
-                case .processing:
+                case .processing, .capture:
                     return 0
                 }
             }
@@ -360,7 +361,7 @@
         // Add a method to capture a still photo
         public func capturePhoto() {
             guard session.isRunning else {
-                self.delegate?.didCaptureImage?(image: nil, from: self)
+                self.imageCaptureDelegate?.didCaptureImage(image: nil, from: self)
                 return
             }
             
@@ -384,7 +385,12 @@
     @available(watchOS, unavailable)
     @objc public protocol BHCameraScanControllerDelegate: AnyObject {
         func didCaptureBarcodes(metadataObjects: [AVMetadataObject], from controller: BHCameraScanController)
-        @objc optional func didCaptureImage(image: UIImage?, from controller: BHCameraScanController)
+    }
+    @available(iOS 9.0, *)
+    @available(tvOS, unavailable)
+    @available(watchOS, unavailable)
+    @objc public protocol BHCameraScanControllerImageCaptureDelegate: AnyObject {
+        func didCaptureImage(image: UIImage?, from controller: BHCameraScanController)
     }
     
     // MARK: - Extensions
@@ -412,13 +418,13 @@
             guard let imageData = photo.fileDataRepresentation(),
                   let image = UIImage(data: imageData) else {
                 DispatchQueue.main.async {
-                    self.delegate?.didCaptureImage?(image: nil, from: self)
+                    self.imageCaptureDelegate?.didCaptureImage(image: nil, from: self)
                 }
                 return
             }
             
             DispatchQueue.main.async {
-                self.delegate?.didCaptureImage?(image: image, from: self)
+                self.imageCaptureDelegate?.didCaptureImage(image: image, from: self)
             }
         }
         
@@ -428,13 +434,13 @@
                   let imageData = AVCapturePhotoOutput.jpegPhotoDataRepresentation(forJPEGSampleBuffer: photoSampleBuffer, previewPhotoSampleBuffer: previewPhotoSampleBuffer),
                   let image = UIImage(data: imageData) else {
                 DispatchQueue.main.async {
-                    self.delegate?.didCaptureImage?(image: nil, from: self)
+                    self.imageCaptureDelegate?.didCaptureImage(image: nil, from: self)
                 }
                 return
             }
             
             DispatchQueue.main.async {
-                self.delegate?.didCaptureImage?(image: image, from: self)
+                self.imageCaptureDelegate?.didCaptureImage(image: image, from: self)
             }
         }
     }

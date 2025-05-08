@@ -4,7 +4,7 @@ import BarcodeHeroUI
 import UIKit
 import AVKit
 
-class MainViewController: UITableViewController, BHCameraScanControllerDelegate {
+class MainViewController: UITableViewController, BHCameraScanControllerDelegate, BHCameraScanControllerImageCaptureDelegate {
     private var onlyOnce = true
     func didCaptureBarcodes(metadataObjects: [AVMetadataObject], from controller: BHCameraScanController) {
         guard onlyOnce else { return }
@@ -40,6 +40,7 @@ class MainViewController: UITableViewController, BHCameraScanControllerDelegate 
                     controller = BHCameraScanController(helpTextColor: UIColor(red: 251/255, green: 244/255, blue: 228/255, alpha: 1), cutoutCornerRadius: 10)
                 }
                 controller!.delegate = self
+                controller!.imageCaptureDelegate = self
                 let navController = UINavigationController(rootViewController: controller!)
                 present(navController, animated: true, completion: nil)
                 //show(controller, sender: nil)
