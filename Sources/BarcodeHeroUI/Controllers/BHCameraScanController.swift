@@ -210,13 +210,9 @@
         override open func viewDidAppear(_ animated: Bool) {
             super.viewDidAppear(animated)
             
-            guard !self.hasLoaded else {
-                return
-            }
+            self.hasLoaded = true
             
             evolve(withMode: .scan)
-            
-            self.hasLoaded = true
         }
         
         override open func viewWillDisappear(_ animated: Bool) {
