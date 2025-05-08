@@ -194,11 +194,12 @@
         override open func viewDidLayoutSubviews() {
             super.viewDidLayoutSubviews()
             
+            self.previewLayer?.frame = view.bounds
+            
             guard !self.hasLoaded else {
                 return
             }
             
-            self.previewLayer?.frame = view.bounds
             self.previewLayer?.videoGravity = AVLayerVideoGravity.resizeAspectFill
             
             view.bringSubviewToFront(self.backgroundView)
